@@ -12,63 +12,27 @@ button { padding: 10px 20px; margin: 5px; font-size: 18px; cursor: pointer; }
 
 <h1>أسماء الله الحسنى</h1>
 <div id="names"></div>
-<br>
-<button onclick="playAll()">تشغيل كل الأسماء تلقائياً</button>
 
 <script>
-// قائمة أسماء الله الحسنى
-const allNames = [
-  "الله", "الرحمن", "الرحيم", "الملك", "القدوس",
-  "السلام", "المؤمن", "المهيمن", "العزيز", "الجبار",
-  "المتكبر", "الخالق", "البارئ", "المصور", "الغفار",
-  "القهار", "الوهاب", "الرزاق", "الفتاح", "العليم",
-  "القابض", "الباسط", "الخافض", "الرافع", "المعز",
-  "المذل", "السميع", "البصير", "الحكم", "العدل",
-  "اللطيف", "الخبير", "الحليم", "العظيم", "الغفور",
-  "الشكور", "العلي", "الكبير", "الحفيظ", "المقيت",
-  "الحسيب", "الجليل", "الكريم", "الرقيب", "المجيب",
-  "الواسع", "الحكيم", "الودود", "المجيد", "الباعث",
-  "الشهيد", "الحق", "الوكيل", "القوي", "المتين",
-  "الولي", "الحميد", "المحصي", "المبدئ", "المعيد",
-  "المحيي", "المميت", "الحي", "القيوم", "الواجد",
-  "الماجد", "الواحد", "الصمد", "القادر", "المقتدر",
-  "المقدم", "المؤخر", "الأول", "الأخر", "الظاهر",
-  "الباطن", "الوالي", "المتعال", "البر", "التواب",
-  "المنتقم", "العفو", "الرؤوف", "مالك الملك", "ذو الجلال والإكرام",
-  "المقسط", "الجامع", "الغني", "المغني", "المانع",
-  "الضار", "النافع", "النور", "الهادي", "البديع",
-  "الباقي", "الوارث", "الرشيد", "الصبور"
-];
+const allNames = ["الله", "الرحمن", "الرحيم", "الملك", "القدوس"];
 
-// توليد أزرار لكل اسم
 const namesDiv = document.getElementById("names");
 allNames.forEach(name => {
   const btn = document.createElement("button");
   btn.textContent = name;
-  btn.onclick = () => speakName(name);
+  btn.onclick = () => {
+    const utterance = new SpeechSynthesisUtterance(name);
+    utterance.lang = "ar-SA";
+    
+    // اختيار صوت عربي متاح
+    const voices = window.speechSynthesis.getVoices();
+    const arabicVoice = voices.find(v => v.lang.includes("ar"));
+    if(arabicVoice) utterance.voice = arabicVoice;
+
+    window.speechSynthesis.speak(utterance);
+  };
   namesDiv.appendChild(btn);
 });
-
-// دالة تشغيل الاسم صوتياً
-function speakName(name) {
-  const utterance = new SpeechSynthesisUtterance(name);
-  utterance.lang = "ar-SA";
-  utterance.rate = 0.9; // سرعة الكلام
-  window.speechSynthesis.speak(utterance);
-}
-
-// دالة لتشغيل كل الأسماء تلقائياً
-function playAll() {
-  let i = 0;
-  function next() {
-    if (i < allNames.length) {
-      speakName(allNames[i]);
-      i++;
-      setTimeout(next, 1500); // تأخير بين الاسماء
-    }
-  }
-  next();
-}
 </script>
 
 </body>
