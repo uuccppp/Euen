@@ -2,38 +2,90 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>أسماء الله الحسنى صوتياً</title>
 <style>
-body { font-family: Arial; text-align: center; margin: 50px; }
-button { padding: 10px 20px; margin: 5px; font-size: 18px; cursor: pointer; }
+  body { font-family: Arial, sans-serif; direction: rtl; text-align: center; margin: 20px; }
+  .name { margin: 10px; padding: 10px; border: 1px solid #333; display: inline-block; cursor: pointer; }
+  select { margin: 10px; }
 </style>
 </head>
 <body>
+<h1>أسماء الله الحسنى صوتياً</h1>
 
-<h1>أسماء الله الحسنى</h1>
+<label for="voice">اختر الصوت:</label>
+<select id="voice"></select>
+
+<label for="format">اختر الصيغة:</label>
+<select id="format">
+  <option value="wav">WAV (كبير الحجم)</option>
+  <option value="mp3">MP3 (ضغط متوسط)</option>
+  <option value="ogg">OGG / Opus (أصغر حجم)</option>
+  <option value="aac">AAC (حجم صغير وجودة جيدة)</option>
+  <option value="pcm">PCM 8-bit (حجم صغير جدًا)</option>
+</select>
+
+<label for="bitrate">اختر جودة / Bitrate:</label>
+<select id="bitrate">
+  <option value="64">64 kbps</option>
+  <option value="32">32 kbps</option>
+  <option value="16">16 kbps</option>
+</select>
+
 <div id="names"></div>
 
 <script>
-const allNames = ["الله", "الرحمن", "الرحيم", "الملك", "القدوس"];
+// قائمة أسماء الله الحسنى (مثال قصير يمكن توسيعه لـ99 اسم)
+const names = [
+  "الله", "الرحمن", "الرحيم", "الملك", "القدوس"
+];
 
-const namesDiv = document.getElementById("names");
-allNames.forEach(name => {
-  const btn = document.createElement("button");
-  btn.textContent = name;
-  btn.onclick = () => {
-    const utterance = new SpeechSynthesisUtterance(name);
-    utterance.lang = "ar-SA";
-    
-    // اختيار صوت عربي متاح
-    const voices = window.speechSynthesis.getVoices();
-    const arabicVoice = voices.find(v => v.lang.includes("ar"));
-    if(arabicVoice) utterance.voice = arabicVoice;
+const namesContainer = document.getElementById("names");
 
-    window.speechSynthesis.speak(utterance);
-  };
-  namesDiv.appendChild(btn);
+// إنشاء أزرار لكل اسم
+names.forEach(name => {
+  const div = document.createElement("div");
+  div.className = "name";
+  div.textContent = name;
+  div.onclick = () => speakName(name);
+  namesContainer.appendChild(div);
 });
-</script>
 
+// تعيين الأصوات المتاحة
+const voiceSelect = document.getElementById("voice");
+let voices = [];
+
+function populateVoices() {
+  voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('ar'));
+  voiceSelect.innerHTML = "";
+  voices.forEach((v, i) => {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = v.name + " - " + v.lang;
+    voiceSelect.appendChild(option);
+  });
+}
+
+// بعض المتصفحات تحتاج استدعاء بعد وقت
+speechSynthesis.onvoiceschanged = populateVoices;
+populateVoices();
+
+// دالة تشغيل الاسم بصوت المستخدم وإعدادات الجودة
+function speakName(name) {
+  const utter = new SpeechSynthesisUtterance(name);
+  utter.voice = voices[voiceSelect.value] || null;
+  utter.rate = 0.9; // سرعة التلاوة
+  utter.pitch = 1;  // نبرة الصوت
+
+  const format = document.getElementById("format").value;
+  const bitrate = document.getElementById("bitrate").value;
+
+  // ملاحظة: SpeechSynthesis API لا يتيح اختيار صيغة/Bitrate حقيقي
+  // هذه الخيارات للتوثيق/تجهيز لاحقًا إذا أردنا توليد ملفات صوتية بـWebAudio
+  console.log(`تشغيل ${name} بصوت: ${utter.voice ? utter.voice.name : 'default'}, صيغة: ${format}, جودة: ${bitrate}kbps`);
+
+  speechSynthesis.speak(utter);
+}
+</script>
 </body>
 </html>
