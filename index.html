@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أسماء الله الحسنى</title>
+
+<style>
+body{
+    font-family: Arial;
+    background: linear-gradient(135deg,#1e3c72,#2a5298);
+    color:white;
+    text-align:center;
+    padding:20px;
+}
+.grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill,minmax(110px,1fr));
+    gap:10px;
+    max-width:900px;
+    margin:auto;
+}
+.card{
+    background:rgba(255,255,255,0.15);
+    padding:15px;
+    border-radius:12px;
+    cursor:pointer;
+}
+.card:hover{
+    background:rgba(255,255,255,0.3);
+}
+</style>
+</head>
+
+<body>
+
+<h2>أسماء الله الحسنى</h2>
+<div class="grid" id="container"></div>
+
+<script>
+
+if (!('speechSynthesis' in window)) {
+    alert("المتصفح لا يدعم ميزة النطق الصوتي");
+}
+
+const names = ["الرَّحْمَٰنُ","الرَّحِيمُ","الْمَلِكُ","الْقُدُّوسُ","السَّلَامُ"];
+
+const container = document.getElementById("container");
+
+let arabicVoice = null;
+
+function loadVoices() {
+    const voices = speechSynthesis.getVoices();
+    arabicVoice = voices.find(v => v.lang.includes("ar"));
+}
+
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ar-SA";
+    if (arabicVoice) {
+        utterance.voice = arabicVoice;
+    }
+    utterance.rate = 0.9;
+    speechSynthesis.speak(utterance);
+}
+
+names.forEach(name=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerText = name;
+    card.onclick = ()=> speak(name);
+    container.appendChild(card);
+});
+
+</script>
+
+</body>
+</html>
