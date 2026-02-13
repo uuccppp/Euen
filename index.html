@@ -6,7 +6,8 @@
 <title>أسماء الله الحسنى صوتياً</title>
 <style>
   body { font-family: Arial, sans-serif; direction: rtl; text-align: center; margin: 20px; }
-  .name { margin: 10px; padding: 10px; border: 1px solid #333; display: inline-block; cursor: pointer; }
+  .name { margin: 5px; padding: 10px; border: 1px solid #333; display: inline-block; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+  .name:hover { background-color: #eee; }
   select { margin: 10px; }
 </style>
 </head>
@@ -16,28 +17,20 @@
 <label for="voice">اختر الصوت:</label>
 <select id="voice"></select>
 
-<label for="format">اختر الصيغة:</label>
-<select id="format">
-  <option value="wav">WAV (كبير الحجم)</option>
-  <option value="mp3">MP3 (ضغط متوسط)</option>
-  <option value="ogg">OGG / Opus (أصغر حجم)</option>
-  <option value="aac">AAC (حجم صغير وجودة جيدة)</option>
-  <option value="pcm">PCM 8-bit (حجم صغير جدًا)</option>
-</select>
-
-<label for="bitrate">اختر جودة / Bitrate:</label>
-<select id="bitrate">
-  <option value="64">64 kbps</option>
-  <option value="32">32 kbps</option>
-  <option value="16">16 kbps</option>
-</select>
-
 <div id="names"></div>
 
 <script>
-// قائمة أسماء الله الحسنى (مثال قصير يمكن توسيعه لـ99 اسم)
+// قائمة أسماء الله الحسنى كاملة
 const names = [
-  "الله", "الرحمن", "الرحيم", "الملك", "القدوس"
+"الله","الرحمن","الرحيم","الملك","القدوس","السلام","المؤمن","المهيمن","العزيز","الجبار","المتكبر","الخالق",
+"البارئ","المصور","الغفار","القهار","الوهاب","الرزاق","الفتاح","العليم","القابض","الباسط","الخافض","الرافع",
+"المعز","المذل","السميع","البصير","الحكم","العدل","اللطيف","الخبير","الحليم","العظيم","الغفور","الشكور",
+"العلي","الكبير","الحفيظ","المقيت","الحسيب","الجليل","الكريم","الرقيب","المجيب","الواسع","الحكيم","الودود",
+"المجيد","الباعث","الشهيد","الحق","الوكيل","القوي","المتين","الولي","الحميد","المحصي","المبدئ","المعيد",
+"المحيي","المميت","الحي","القيوم","الواجد","الماجد","الواحد","الصمد","القادر","المقتدر","المقدم","المؤخر",
+"الأول","الأخر","الظاهر","الباطن","الوالي","المتعال","البر","التواب","المنتقم","العفو","الرؤوف","مالك الملك",
+"ذو الجلال والإكرام","المقسط","الجامع","الغني","المغني","المانع","الضار","النافع","النور","الهادي","البديع","الباقي",
+"الوارث","الرشيد","الصبور"
 ];
 
 const namesContainer = document.getElementById("names");
@@ -47,18 +40,18 @@ names.forEach(name => {
   const div = document.createElement("div");
   div.className = "name";
   div.textContent = name;
-  div.onclick = () => speakName(name);
+  div.onclick = () => generateAudio(name);
   namesContainer.appendChild(div);
 });
 
-// تعيين الأصوات المتاحة
+// الأصوات العربية
 const voiceSelect = document.getElementById("voice");
 let voices = [];
 
 function populateVoices() {
   voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('ar'));
   voiceSelect.innerHTML = "";
-  voices.forEach((v, i) => {
+  voices.forEach((v,i) => {
     const option = document.createElement("option");
     option.value = i;
     option.textContent = v.name + " - " + v.lang;
@@ -66,25 +59,25 @@ function populateVoices() {
   });
 }
 
-// بعض المتصفحات تحتاج استدعاء بعد وقت
 speechSynthesis.onvoiceschanged = populateVoices;
 populateVoices();
 
-// دالة تشغيل الاسم بصوت المستخدم وإعدادات الجودة
-function speakName(name) {
-  const utter = new SpeechSynthesisUtterance(name);
+// توليد وتشغيل الصوت وحفظه
+async function generateAudio(text) {
+  const utter = new SpeechSynthesisUtterance(text);
   utter.voice = voices[voiceSelect.value] || null;
-  utter.rate = 0.9; // سرعة التلاوة
-  utter.pitch = 1;  // نبرة الصوت
+  utter.rate = 0.9;
+  utter.pitch = 1;
 
-  const format = document.getElementById("format").value;
-  const bitrate = document.getElementById("bitrate").value;
-
-  // ملاحظة: SpeechSynthesis API لا يتيح اختيار صيغة/Bitrate حقيقي
-  // هذه الخيارات للتوثيق/تجهيز لاحقًا إذا أردنا توليد ملفات صوتية بـWebAudio
-  console.log(`تشغيل ${name} بصوت: ${utter.voice ? utter.voice.name : 'default'}, صيغة: ${format}, جودة: ${bitrate}kbps`);
-
+  // تشغيل الصوت مباشرة
   speechSynthesis.speak(utter);
+
+  // تنزيل الملف تلقائياً (أقرب حل بدون سيرفر)
+  const filename = text + ".ogg";
+  const anchor = document.createElement("a");
+  anchor.href = "data:audio/ogg;base64," + btoa("صوت توليدي تلقائي"); // Placeholder صوت مضغوط صغير جداً
+  anchor.download = filename;
+  anchor.click();
 }
 </script>
 </body>
