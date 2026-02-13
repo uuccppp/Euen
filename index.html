@@ -2,32 +2,55 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>أسماء الله الحسنى - تجربة تنزيل الصوت</title>
+<title>أسماء الله الحسنى - تنزيل الصوت</title>
 <style>
-  body { font-family: Arial, sans-serif; direction: rtl; text-align: center; margin: 50px; }
-  h1 { color: #2c3e50; }
-  button { margin: 10px; padding: 10px 20px; font-size: 18px; cursor: pointer; }
+body { font-family: Arial; direction: rtl; text-align: center; margin: 50px; }
+button { margin: 10px; padding: 10px 20px; font-size: 18px; cursor: pointer; }
 </style>
 </head>
 <body>
-<h1>أسماء الله الحسنى - تجربة تنزيل الصوت</h1>
+<h1>أسماء الله الحسنى - تنزيل الصوت</h1>
 
-<button onclick="downloadAudio('Allah', 'data:audio/ogg;base64,T2dnUwACAAAAAAAAAAD...')">الله</button>
-<button onclick="downloadAudio('Ar-Rahman', 'data:audio/ogg;base64,T2dnUwACAAAAAAAAAAD...')">الرحمن</button>
-<button onclick="downloadAudio('Ar-Rahim', 'data:audio/ogg;base64,T2dnUwACAAAAAAAAAAD...')">الرحيم</button>
-<button onclick="downloadAudio('Al-Malik', 'data:audio/ogg;base64,T2dnUwACAAAAAAAAAAD...')">الملك</button>
-<button onclick="downloadAudio('Al-Quddus', 'data:audio/ogg;base64,T2dnUwACAAAAAAAAAAD...')">القدوس</button>
+<button onclick="speakDownload('الله')">الله</button>
+<button onclick="speakDownload('الرحمن')">الرحمن</button>
+<button onclick="speakDownload('الرحيم')">الرحيم</button>
+<button onclick="speakDownload('الملك')">الملك</button>
+<button onclick="speakDownload('القدوس')">القدوس</button>
 
 <script>
-function downloadAudio(filename, base64) {
-    const link = document.createElement('a');
-    link.href = base64;
-    link.download = filename + '.ogg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+async function speakDownload(text) {
+  // أنشئ ملف صوتي باستخدام واجهة SpeechSynthesis
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ar-SA';
+  
+  // استخدم AudioContext لتسجيل الصوت
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const dest = audioContext.createMediaStreamDestination();
+  const mediaRecorder = new MediaRecorder(dest.stream);
+
+  let chunks = [];
+  mediaRecorder.ondataavailable = e => chunks.push(e.data);
+  mediaRecorder.onstop = e => {
+    const blob = new Blob(chunks, {type:'audio/ogg'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = text + '.ogg';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  mediaRecorder.start();
+
+  const source = audioContext.createMediaStreamSource(dest.stream);
+  source.connect(audioContext.destination);
+
+  speechSynthesis.speak(utterance);
+
+  utterance.onend = () => {
+    mediaRecorder.stop();
+  };
 }
 </script>
-
 </body>
 </html>
